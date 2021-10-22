@@ -4,6 +4,7 @@ import lombok.SneakyThrows;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.MessageEntity;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -38,10 +39,24 @@ public class TestBot extends TelegramLongPollingBot {
     @Override
     @SneakyThrows
     public void onUpdateReceived(Update update) {
-        if (update.hasMessage()){
-            handleMessage(update.getMessage());
-            }
+        if (update.hasCallbackQuery()){
+            handleCallback(update.getCallbackQuery());
         }
+        else if (update.hasMessage()) {
+            handleMessage(update.getMessage());
+        }
+    }
+
+    @SneakyThrows
+    private void handleCallback(CallbackQuery callbackQuery) {
+        Message message = callbackQuery.getMessage();
+        int data = Integer.parseInt(callbackQuery.getData());
+        ArrayList<String> genres = getAllGenres();
+        execute(SendMessage.builder()
+                .chatId(message.getChatId().toString())
+                .text("Отличный выбор! Вот несколько фильмов из категории <" + genres.get(data) + ">:\n.\n.\n.")
+                .build());
+    }
 
     public static ArrayList<String> getAllGenres() {
         ArrayList<String> genres = new ArrayList<>();
@@ -78,25 +93,35 @@ public class TestBot extends TelegramLongPollingBot {
             Optional<MessageEntity> commandEntity =
                     message.getEntities().stream().filter(e -> "bot_command".equals(e.getType())).findFirst();
             if (commandEntity.isPresent()) {
-                String command = message.getText().substring(commandEntity.get().getOffset(), commandEntity.get().getLength());
+                String command =
+                        message.getText().substring(commandEntity.get().getOffset(), commandEntity.get().getLength());
                 switch (command) {
                     case "/choose_genre":
                         ArrayList<String> genres = getAllGenres();
                         List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
                         for (int i = 0; i < genres.size(); i += 2){
                             buttons.add(Arrays.asList(
-                                    InlineKeyboardButton.builder().text(genres.get(i)).callbackData("what?").build(),
-                                    InlineKeyboardButton.builder().text(genres.get(i + 1)).callbackData("what?").build()
+                                    InlineKeyboardButton.builder().text(genres.get(i)).callbackData(Integer.toString(i)).build(),
+                                    InlineKeyboardButton.builder().text(genres.get(i + 1)).callbackData(Integer.toString(i + 1)).build()
                             ));
                         }
                         execute(SendMessage.builder()
                                 .chatId(message.getChatId().toString())
-                                .text("Please, choose a genre of film you want to watch. ")
+                                .text("Пожалуйста, выберите жанр фильма, который хотите посмотреть. ")
                                 .replyMarkup(InlineKeyboardMarkup.builder().keyboard(buttons).build())
                                 .build());
+                        break;
+                    default:
+                        throw new IllegalStateException("Unexpected value: " + command);
                 }
             }
 
+        }
+        else {
+            execute(SendMessage.builder()
+                    .chatId(message.getChatId().toString())
+                    .text("Вы отправили: " + message.getText())
+                    .build());
         }
     }
 }
