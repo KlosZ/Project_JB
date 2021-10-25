@@ -6,7 +6,7 @@ import java.util.Random;
 import java.util.regex.*;
 
 
-public class Readfromsite {
+public class ReadFromSite {
 
     public static void main(String[] args) throws Exception {
         System.out.println(findMovie("Thriller"));
@@ -18,14 +18,12 @@ public class Readfromsite {
         BufferedReader in = new BufferedReader(
                 new InputStreamReader(oracle.openStream()));
         Random random = new Random();
-        int randNumber = random.nextInt(51 - 1) + 1;
-        ArrayList<String> movies = new ArrayList<String>();
+        ArrayList<String> movies = new ArrayList<>();
         String regex = ">([а-яА-я ]+)</a>";
         String regexYear = "\s+<span class=\"lister-item-year text-muted unbold\">([I0-9–()]+)</span>";
         Pattern patternYear = Pattern.compile(regexYear);
         Pattern pattern = Pattern.compile(regex);
         String inputLine;
-        String movie = null;
         while ((inputLine = in.readLine()) != null) {
             Matcher matcher = pattern.matcher(inputLine);
             if (matcher.find()) {
