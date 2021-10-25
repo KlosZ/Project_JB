@@ -1,6 +1,5 @@
 package com.devtools.mylib;
 
-import com.devtools.mylib.TestBot;
 import lombok.SneakyThrows;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
@@ -53,10 +52,10 @@ public class TestBot extends TelegramLongPollingBot {
         Message message = callbackQuery.getMessage();
         int data = Integer.parseInt(callbackQuery.getData());
         ArrayList<String> genres = getAllGenres();
-        ReadFromSite movie = new ReadFromSite();
         execute(SendMessage.builder()
                 .chatId(message.getChatId().toString())
-                .text("Отличный выбор! Вот фильм жанра <" + genres.get(data) + ">, который вы можете посмотреть:\n"+movie.findMovie(genres.get(data)))
+                .text("Отличный выбор! Вот фильм жанра <" + genres.get(data) +
+                        ">, который вы можете посмотреть:\n" + ReadFromSite.findMovie(genres.get(data)))
                 .build());
     }
 
@@ -112,7 +111,10 @@ public class TestBot extends TelegramLongPollingBot {
                                 .build());
                         break;
                     default:
-                        throw new IllegalStateException("Unexpected value: " + command);
+                        execute(SendMessage.builder()
+                                .chatId(message.getChatId().toString())
+                                .text("Команда введена не верно. Попробуйте снова. ")
+                                .build());
                 }
             }
 
