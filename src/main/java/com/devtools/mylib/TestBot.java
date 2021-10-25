@@ -1,5 +1,6 @@
 package com.devtools.mylib;
 
+import com.devtools.mylib.TestBot;
 import lombok.SneakyThrows;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
@@ -52,38 +53,37 @@ public class TestBot extends TelegramLongPollingBot {
         Message message = callbackQuery.getMessage();
         int data = Integer.parseInt(callbackQuery.getData());
         ArrayList<String> genres = getAllGenres();
+        ReadFromSite movie = new ReadFromSite();
         execute(SendMessage.builder()
                 .chatId(message.getChatId().toString())
-                .text("Отличный выбор! Вот несколько фильмов из категории <" + genres.get(data) + ">:\n.\n.\n.")
+                .text("Отличный выбор! Вот фильм жанра <" + genres.get(data) + ">, который вы можете посмотреть:\n"+movie.findMovie(genres.get(data)))
                 .build());
     }
 
     public static ArrayList<String> getAllGenres() {
         ArrayList<String> genres = new ArrayList<>();
-        genres.add("Комедии");
-        genres.add("Мультфильмы");
-        genres.add("Ужасы");
-        genres.add("Фантастика");
-        genres.add("Триллеры");
-        genres.add("Боевики");
-        genres.add("Детективы");
-        genres.add("Мелодрамы");
-        genres.add("Аниме");
-        genres.add("Военные");
-        genres.add("Приключения");
-        genres.add("Фэнтези");
-        genres.add("Исторические");
-        genres.add("Семейные");
-        genres.add("Драмы");
-        genres.add("Документальные");
-        genres.add("Биографии");
-        genres.add("Детские");
-        genres.add("Криминал");
-        genres.add("Вестерны");
-        genres.add("Спортивные");
-        genres.add("Короткометражки");
-        genres.add("Концерты");
-        genres.add("Мюзиклы");
+        genres.add("Comedy");
+        genres.add("Animation");
+        genres.add("Horror");
+        genres.add("Sci-Fi");
+        genres.add("Thriller");
+        genres.add("Action");
+        genres.add("Film-Noir");
+        genres.add("Drama");
+        genres.add("War");
+        genres.add("Adventure");
+        genres.add("Fantasy");
+        genres.add("Romance");
+        genres.add("History");
+        genres.add("Western");
+        genres.add("Mystery");
+        genres.add("Documentary");
+        genres.add("Biography");
+        genres.add("Family");
+        genres.add("Crime");
+        genres.add("Sport");
+        genres.add("Short");
+        genres.add("Musical");
         return genres;
     }
 
