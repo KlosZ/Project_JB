@@ -17,7 +17,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-public class TestBot extends TelegramLongPollingBot {
+public class CinemaBotClass extends TelegramLongPollingBot {
 
     @Override
     public String getBotUsername() {
@@ -31,7 +31,7 @@ public class TestBot extends TelegramLongPollingBot {
 
     @SneakyThrows
     public static void main(String[] args) {
-        TestBot bot = new TestBot();
+        CinemaBotClass bot = new CinemaBotClass();
         TelegramBotsApi telegramBotsApi = new TelegramBotsApi(DefaultBotSession.class);
         telegramBotsApi.registerBot(bot);
     }
@@ -54,8 +54,8 @@ public class TestBot extends TelegramLongPollingBot {
         ArrayList<String> genres = getAllGenres();
         execute(SendMessage.builder()
                 .chatId(message.getChatId().toString())
-                .text("Отличный выбор! Вот фильм жанра <" + genres.get(data) +
-                        ">, который вы можете посмотреть:\n" + ReadFromSite.findMovie(genres.get(data)))
+                .text("Отличный выбор! Вот фильм жанра '" + genres.get(data) +
+                        "', который вы можете посмотреть:\n" + ReadFromSite.findMovie(genres.get(data)))
                 .build());
     }
 
@@ -95,10 +95,14 @@ public class TestBot extends TelegramLongPollingBot {
                 String command =
                         message.getText().substring(commandEntity.get().getOffset(), commandEntity.get().getLength());
                 switch (command) {
-                    case "/choose_genre":
+                    case "/start" -> execute(SendMessage.builder()
+                            .chatId(message.getChatId().toString())
+                            .text("Добро пожаловать в K&K's CinemaBot!\nЭтот бот поможет вам с выбором фильма на вечер =)")
+                            .build());
+                    case "/choose_genre" -> {
                         ArrayList<String> genres = getAllGenres();
                         List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
-                        for (int i = 0; i < genres.size(); i += 2){
+                        for (int i = 0; i < genres.size(); i += 2) {
                             buttons.add(Arrays.asList(
                                     InlineKeyboardButton.builder().text(genres.get(i)).callbackData(Integer.toString(i)).build(),
                                     InlineKeyboardButton.builder().text(genres.get(i + 1)).callbackData(Integer.toString(i + 1)).build()
@@ -109,12 +113,11 @@ public class TestBot extends TelegramLongPollingBot {
                                 .text("Пожалуйста, выберите жанр фильма, который хотите посмотреть. ")
                                 .replyMarkup(InlineKeyboardMarkup.builder().keyboard(buttons).build())
                                 .build());
-                        break;
-                    default:
-                        execute(SendMessage.builder()
-                                .chatId(message.getChatId().toString())
-                                .text("Команда введена не верно. Попробуйте снова. ")
-                                .build());
+                    }
+                    default -> execute(SendMessage.builder()
+                            .chatId(message.getChatId().toString())
+                            .text("Команда введена не верно. Попробуйте снова. ")
+                            .build());
                 }
             }
 

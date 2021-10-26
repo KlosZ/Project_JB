@@ -1,16 +1,15 @@
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import com.devtools.mylib.TestBot;
+import com.devtools.mylib.CinemaBotClass;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 
 public class TestingBotClass {
-    TestBot bot;
+    CinemaBotClass bot;
     String message;
 
     @BeforeEach
     void setUp() {
-        bot = new TestBot();
+        bot = new CinemaBotClass();
         // ?
     }
 
