@@ -39,7 +39,7 @@ public class CinemaBotClass extends TelegramLongPollingBot {
     @Override
     @SneakyThrows
     public void onUpdateReceived(Update update) {
-        if (update.hasCallbackQuery()){
+        if (update.hasCallbackQuery()) {
             handleCallback(update.getCallbackQuery());
         }
         else if (update.hasMessage()) {
@@ -51,11 +51,9 @@ public class CinemaBotClass extends TelegramLongPollingBot {
     private void handleCallback(CallbackQuery callbackQuery) {
         Message message = callbackQuery.getMessage();
         int data = Integer.parseInt(callbackQuery.getData());
-        ArrayList<String> genres = getAllGenres();
         execute(SendMessage.builder()
                 .chatId(message.getChatId().toString())
-                .text("Отличный выбор! Вот фильм жанра '" + genres.get(data) +
-                        "', который вы можете посмотреть:\n" + ReadFromSite.findMovie(genres.get(data)))
+                .text(executeMessageByKey("callbackChoosingGenreCommand", data))
                 .build());
     }
 
@@ -87,6 +85,44 @@ public class CinemaBotClass extends TelegramLongPollingBot {
     }
 
     @SneakyThrows
+    public static String executeMessageByKey(String key, int data) {
+        String movieGenre = "";
+        if (data != -1) {
+            ArrayList<String> genres = getAllGenres();
+            movieGenre = genres.get(data);
+        }
+        String message = "";
+        switch (key) {
+            case "startCommand" ->
+                    message = "Добро пожаловать в K&K's CinemaBot!\nЭтот бот поможет вам с выбором фильма на вечер.\nОбращайтесь по '/help', если не знаешь что и как. =)";
+            case "choosingGenreCommand" ->
+                    message = "Пожалуйста, выберите жанр фильма, который хотите посмотреть. ";
+            case "callbackChoosingGenreCommand" ->
+                    message = "Отличный выбор! Вот фильм жанра '" + movieGenre +
+                            "', который вы можете посмотреть:\n" + ReadFromSite.findMovie(movieGenre);
+            case "errorInputCommand" ->
+                    message = "Команда введена не верно. Попробуйте снова. ";
+            case "randomTextInputCommand" ->
+                    message = "Вы отправили: ";
+            case "randomInputCommand" ->
+                    message = "Вы отправили не текстовое сообщение. " +
+                            "Я же бот, а не нейросеть, чтобы распознавать, что вы мне отправили. =)";
+            case "helpCommand" ->
+                    message = """
+                            Итак, что же может этот бот (то есть, я)?
+                            1. Понятное дело, если забыли конкретную команду - тыкайте '/help'.
+                            2. Могу предложить вам рандомный фильм по выбранному жанру (используйте команду '/choose_genre').
+                            3. ...
+
+                            Это пока всё, что я могу сделать. Но вы не расстраивайтесь! =)
+                            Я нахожусь в стадии почти-ежедневного обновления, и в будущем у меня будет гораздо больше команд.
+                            Итак, что же вы хотите?
+                            """;
+        }
+        return message;
+    }
+
+    @SneakyThrows
     private void handleMessage(Message message) {
         if (message.hasText() && message.hasEntities()){
             Optional<MessageEntity> commandEntity =
@@ -97,36 +133,48 @@ public class CinemaBotClass extends TelegramLongPollingBot {
                 switch (command) {
                     case "/start" -> execute(SendMessage.builder()
                             .chatId(message.getChatId().toString())
-                            .text("Добро пожаловать в K&K's CinemaBot!\nЭтот бот поможет вам с выбором фильма на вечер =)")
+                            .text(executeMessageByKey("startCommand", -1))
                             .build());
                     case "/choose_genre" -> {
                         ArrayList<String> genres = getAllGenres();
                         List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
                         for (int i = 0; i < genres.size(); i += 2) {
                             buttons.add(Arrays.asList(
-                                    InlineKeyboardButton.builder().text(genres.get(i)).callbackData(Integer.toString(i)).build(),
-                                    InlineKeyboardButton.builder().text(genres.get(i + 1)).callbackData(Integer.toString(i + 1)).build()
+                                    InlineKeyboardButton.builder()
+                                            .text(genres.get(i)).callbackData(Integer.toString(i)).build(),
+                                    InlineKeyboardButton.builder()
+                                            .text(genres.get(i + 1)).callbackData(Integer.toString(i + 1)).build()
                             ));
                         }
                         execute(SendMessage.builder()
                                 .chatId(message.getChatId().toString())
-                                .text("Пожалуйста, выберите жанр фильма, который хотите посмотреть. ")
+                                .text(executeMessageByKey("choosingGenreCommand", -1))
                                 .replyMarkup(InlineKeyboardMarkup.builder().keyboard(buttons).build())
                                 .build());
                     }
+                    case "/help" -> execute(SendMessage.builder()
+                            .chatId(message.getChatId().toString())
+                            .text(executeMessageByKey("helpCommand", -1))
+                            .build());
                     default -> execute(SendMessage.builder()
                             .chatId(message.getChatId().toString())
-                            .text("Команда введена не верно. Попробуйте снова. ")
+                            .text(executeMessageByKey("errorInputCommand", -1))
                             .build());
                 }
             }
 
         }
         else {
-            execute(SendMessage.builder()
+            if (message.hasText())
+                execute(SendMessage.builder()
                     .chatId(message.getChatId().toString())
-                    .text("Вы отправили: " + message.getText())
+                    .text(executeMessageByKey("randomTextInputCommand", -1) + message.getText())
                     .build());
+            else
+                execute(SendMessage.builder()
+                        .chatId(message.getChatId().toString())
+                        .text(executeMessageByKey("randomInputCommand", -1))
+                        .build());
         }
     }
 }
