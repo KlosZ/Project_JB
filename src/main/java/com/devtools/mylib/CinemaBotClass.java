@@ -120,7 +120,7 @@ public class CinemaBotClass extends TelegramLongPollingBot {
                 if (getPlace(data).equals("дома"))
                     message = "Итак вы выбрали смотреть фильм " + getPlace(data) + ". Тык сюда -> '/choose_genre'";
                 else
-                    message = "Итак вы выбрали смотреть фильм " + getPlace(data) +
+                    message = "Отлично! вы выбрали смотреть фильм " + getPlace(data) +
                             "Давайте выберем кинотеатр...\nТык сюда -> '/choose_cinema'";
             }
             case "errorInputCommand" ->
@@ -134,7 +134,7 @@ public class CinemaBotClass extends TelegramLongPollingBot {
                     message = "Команда еще не реализована! Попробуйте позже!";
             case "helpCommand" ->
                     message = """
-                            Итак, что же может этот бот (то есть, я)?
+                            Итак, что же может этот ваш бот (то есть, я)?
                             1. Понятное дело, если забыли конкретную команду - тыкайте '/help'.
                             2. Если вы хотите посмотреть фильм дома, то могу предложить вам рандомный
                                фильм по выбранному жанру (используйте команду '/choose_genre').
