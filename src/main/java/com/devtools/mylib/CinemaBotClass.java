@@ -12,12 +12,11 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public class CinemaBotClass extends TelegramLongPollingBot {
+
+    String flag = "";
 
     @Override
     public String getBotUsername() {
@@ -51,10 +50,16 @@ public class CinemaBotClass extends TelegramLongPollingBot {
     private void handleCallback(CallbackQuery callbackQuery) {
         Message message = callbackQuery.getMessage();
         int data = Integer.parseInt(callbackQuery.getData());
-        execute(SendMessage.builder()
-                .chatId(message.getChatId().toString())
-                .text(executeMessageByKey("callbackChoosingGenreCommand", data))
-                .build());
+        switch (flag) {
+            case "choiceGenre" -> execute(SendMessage.builder()
+                    .chatId(message.getChatId().toString())
+                    .text(executeMessageByKey("callbackChoosingGenreCommand", data))
+                    .build());
+            case "choiceHomeCinema" -> execute(SendMessage.builder()
+                    .chatId(message.getChatId().toString())
+                    .text(executeMessageByKey("callbackChoosingPlaceCommand", data))
+                    .build());
+        }
     }
 
     public static ArrayList<String> getAllGenres() {
@@ -84,6 +89,10 @@ public class CinemaBotClass extends TelegramLongPollingBot {
         return genres;
     }
 
+    public static String getPlace(Integer i) {
+        return (i == 0) ? "дома" : "в кинотеатре";
+    }
+
     @SneakyThrows
     public static String executeMessageByKey(String key, int data) {
         String movieGenre = "";
@@ -94,12 +103,26 @@ public class CinemaBotClass extends TelegramLongPollingBot {
         String message = "";
         switch (key) {
             case "startCommand" ->
-                    message = "Добро пожаловать в K&K's CinemaBot!\nЭтот бот поможет вам с выбором фильма на вечер.\nОбращайтесь по '/help', если не знаешь что и как. =)";
+                    message = """
+                            Добро пожаловать в K&K's CinemaBot!
+                            Этот бот поможет вам с выбором фильма на вечер.
+                            Чуть ниже, выберите, где вы будете смотреть кинцо?
+                            
+                            В любой момент, вы можете обратиться по команде '/help',
+                            если не знаешь что и как. Действуй =)
+                            """;
             case "choosingGenreCommand" ->
                     message = "Пожалуйста, выберите жанр фильма, который хотите посмотреть. ";
             case "callbackChoosingGenreCommand" ->
                     message = "Отличный выбор! Вот фильм жанра '" + movieGenre +
                             "', который вы можете посмотреть:\n" + ReadFromSite.findMovie(movieGenre);
+            case "callbackChoosingPlaceCommand" -> {
+                if (getPlace(data).equals("дома"))
+                    message = "Итак вы выбрали смотреть фильм " + getPlace(data) + ". Тык сюда -> '/choose_genre'";
+                else
+                    message = "Итак вы выбрали смотреть фильм " + getPlace(data) +
+                            "Давайте выберем кинотеатр...\nТык сюда -> '/choose_cinema'";
+            }
             case "errorInputCommand" ->
                     message = "Команда введена не верно. Попробуйте снова. ";
             case "randomTextInputCommand" ->
@@ -107,13 +130,18 @@ public class CinemaBotClass extends TelegramLongPollingBot {
             case "randomInputCommand" ->
                     message = "Вы отправили не текстовое сообщение. " +
                             "Я же бот, а не нейросеть, чтобы распознавать, что вы мне отправили. =)";
+            case "notRealizedCommand" ->
+                    message = "Команда еще не реализована! Попробуйте позже!";
             case "helpCommand" ->
                     message = """
                             Итак, что же может этот бот (то есть, я)?
                             1. Понятное дело, если забыли конкретную команду - тыкайте '/help'.
-                            2. Могу предложить вам рандомный фильм по выбранному жанру (используйте команду '/choose_genre').
-                            3. ...
-
+                            2. Если вы хотите посмотреть фильм дома, то могу предложить вам рандомный
+                               фильм по выбранному жанру (используйте команду '/choose_genre').
+                            3. Если вы желаете пойти в кинотеатр, предлагаю вам использовать команду '/choose_cinema',
+                               она поможет расписанием сеансов на оставшийся день в выбранном ввами кинотеатре.
+                            4. ...
+                            
                             Это пока всё, что я могу сделать. Но вы не расстраивайтесь! =)
                             Я нахожусь в стадии почти-ежедневного обновления, и в будущем у меня будет гораздо больше команд.
                             Итак, что же вы хотите?
@@ -131,15 +159,26 @@ public class CinemaBotClass extends TelegramLongPollingBot {
                 String command =
                         message.getText().substring(commandEntity.get().getOffset(), commandEntity.get().getLength());
                 switch (command) {
-                    case "/start" -> execute(SendMessage.builder()
-                            .chatId(message.getChatId().toString())
-                            .text(executeMessageByKey("startCommand", -1))
-                            .build());
+                    case "/start" -> {
+                        flag = "choiceHomeCinema";
+                        List<List<InlineKeyboardButton>> buttonsOfPlaces = new ArrayList<>();
+                        buttonsOfPlaces.add(Arrays.asList(
+                                InlineKeyboardButton.builder()
+                                        .text("Дома").callbackData(Integer.toString(0)).build(),
+                                InlineKeyboardButton.builder()
+                                        .text("В кинотеатре").callbackData(Integer.toString(1)).build()));
+                        execute(SendMessage.builder()
+                                .chatId(message.getChatId().toString())
+                                .text(executeMessageByKey("startCommand", -1))
+                                .replyMarkup(InlineKeyboardMarkup.builder().keyboard(buttonsOfPlaces).build())
+                                .build());
+                    }
                     case "/choose_genre" -> {
+                        flag = "choiceGenre";
                         ArrayList<String> genres = getAllGenres();
-                        List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
+                        List<List<InlineKeyboardButton>> buttonsOfGenres = new ArrayList<>();
                         for (int i = 0; i < genres.size(); i += 2) {
-                            buttons.add(Arrays.asList(
+                            buttonsOfGenres.add(Arrays.asList(
                                     InlineKeyboardButton.builder()
                                             .text(genres.get(i)).callbackData(Integer.toString(i)).build(),
                                     InlineKeyboardButton.builder()
@@ -149,9 +188,13 @@ public class CinemaBotClass extends TelegramLongPollingBot {
                         execute(SendMessage.builder()
                                 .chatId(message.getChatId().toString())
                                 .text(executeMessageByKey("choosingGenreCommand", -1))
-                                .replyMarkup(InlineKeyboardMarkup.builder().keyboard(buttons).build())
+                                .replyMarkup(InlineKeyboardMarkup.builder().keyboard(buttonsOfGenres).build())
                                 .build());
                     }
+                    case "/choose_cinema" -> execute(SendMessage.builder()
+                            .chatId(message.getChatId().toString())
+                            .text(executeMessageByKey("notRealizedCommand", -1))
+                            .build());
                     case "/help" -> execute(SendMessage.builder()
                             .chatId(message.getChatId().toString())
                             .text(executeMessageByKey("helpCommand", -1))
