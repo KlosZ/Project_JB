@@ -15,9 +15,10 @@ public class GetCinemas {
     }
 
     public static Map<String,String> findCinemas(String city) throws Exception {
-        URL oracle = new URL("https://kassa.rambler.ru/" + city + "/movie");
-        BufferedReader in = new BufferedReader(new InputStreamReader(oracle.openStream()));
-        Map<String, String> dictionary = new HashMap<>();
+        URL oracle = new URL("https://kassa.rambler.ru/"+city+"/movie");
+        BufferedReader in = new BufferedReader(
+                new InputStreamReader(oracle.openStream()));
+        Map<String,String> dictionary = new HashMap<String,String>();
         String regexCinema = "\s<a href=\"(/"+city+"/cinema/[-a-z0-9]+)\">([\sа-яА-я]+)</a>";
         Pattern patternCinema = Pattern.compile(regexCinema);
         String inputLine;
