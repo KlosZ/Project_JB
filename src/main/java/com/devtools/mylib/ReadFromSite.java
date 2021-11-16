@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Random;
 import java.util.regex.*;
 
-
 public class ReadFromSite {
 
     public static String findMovie(String genre) throws Exception {
