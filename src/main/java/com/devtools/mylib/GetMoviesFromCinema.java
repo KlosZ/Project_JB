@@ -1,8 +1,6 @@
 package com.devtools.mylib;
 import java.net.*;
 import java.io.*;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.regex.*;
 
 
@@ -21,14 +19,13 @@ public class GetMoviesFromCinema {
         URL oracle = new URL("https://kassa.rambler.ru"+cinema);
         BufferedReader in = new BufferedReader(
                 new InputStreamReader(oracle.openStream()));
-        Map<String,String> dictionary = new HashMap<String,String>();
-        String result ="";
+        StringBuilder result = new StringBuilder();
         String regexMovie = "\s<div class=\"rasp_title\"><a href=\"[/a-z0-9]+\" itemprop=\"url\"><span itemprop=\"name\" class=\"s-name\">([\sa-zA-zа-яА-я0-9.:,]+)</span></a></div>";
         String regexGenre = "\s<div class=\"rasp_place\" itemprop=\"genre\">([а-яА-я,\s]+)</div>";
         String regexAge = "\s<div class=\"rasp_audience_movie\" itemprop=\"typicalAgeRange\">([0-9+]+)</div>";
         String regexSeance = "\s<div class=\"rasp_type\">([\sa-яА-яA-Za-z0-9]+)<i class=\"ruble\"></i></div>";
         String inputLine;
-        String movie = "";
+        StringBuilder movie = new StringBuilder();
         boolean checkSeance = false;
         boolean checkTime = true;
         while ((inputLine = in.readLine()) != null) {
@@ -40,56 +37,46 @@ public class GetMoviesFromCinema {
             if (matcherMovie.find()) {
                 checkTime = false;
                 if(checkSeance) {
-                    if (!result.equals(""))
-                    {
-                        result+="\n\n";
-                    }
-                    result += movie;
+                    if (!result.toString().equals(""))
+                        result.append("\n\n");
+                    result.append(movie);
                     checkSeance = false;
                 }
-                movie = matcherMovie.group(1)+"\n";
+                movie = new StringBuilder(matcherMovie.group(1) + "\n");
                 continue;
             }
             if (matcherGenre.find()) {
-                movie += matcherGenre.group(1) + "\n";
+                movie.append(matcherGenre.group(1)).append("\n");
                 continue;
             }
             if (matcherAge.find()) {
-                movie+=matcherAge.group(1)+"\n";
+                movie.append(matcherAge.group(1)).append("\n");
                 continue;
             }
             if (matcherSeance.find()) {
                 if(checkTime)
                 {
-                    movie+="\n";
+                    movie.append("\n");
                     checkTime = false;
                 }
-                movie+=matcherSeance.group(1)+"\n";
+                movie.append(matcherSeance.group(1)).append("\n");
                 checkSeance = true;
                 continue;
             }
             if (matcherTime.find()) {
                 if(checkTime)
-                {
-                    movie+=", ";
-                }
-                movie+=matcherTime.group(1);
+                    movie.append(", ");
+                movie.append(matcherTime.group(1));
                 checkTime = true;
-                continue;
             }
         }
         if(checkSeance) {
-            if (!result.equals(""))
-            {
-                result+="\n\n";
-            }
-            result += movie;
-            checkSeance = false;
+            if (!result.toString().equals(""))
+                result.append("\n\n");
+            result.append(movie);
         }
-        if(result.equals(""))
-        {
+        if(result.toString().equals(""))
             return "В этом кинотеатре сегодня нет сеансов. Попробуйте другой";
-        }
-        return result;
+        return result.toString();
     }
 }
