@@ -9,7 +9,7 @@ import java.util.regex.*;
 public class ReadFromSite {
 
     public static String findMovie(String genre) throws Exception {
-        URL oracle = new URL("https://www.imdb.com/search/title/?genres="+genre+"&explore=title_type,genres&ref_=tt_ov_inf");
+        URL oracle = new URL("https://www.imdb.com/search/title/?genres="+genre+"&sort=boxoffice_gross_us,desc");
         BufferedReader in = new BufferedReader(
                 new InputStreamReader(oracle.openStream()));
         Random random = new Random();
