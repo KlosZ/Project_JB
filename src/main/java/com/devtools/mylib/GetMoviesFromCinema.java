@@ -81,7 +81,7 @@ public class GetMoviesFromCinema {
         if(checkSeance) {
             if (!result.equals(""))
             {
-                result+="\n";
+                result+="\n\n";
             }
             result += movie;
             checkSeance = false;
