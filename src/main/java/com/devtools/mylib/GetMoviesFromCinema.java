@@ -8,11 +8,6 @@ import java.util.regex.*;
 
 public class GetMoviesFromCinema {
 
-    public static void main(String[] args) {
-        String engRus = findMovies("/ekaterinburg/cinema/titanik-sinema-361");
-        System.out.println(engRus);
-    }
-
     public static Matcher getMatcher(String regex, String line){
         Pattern pattern = Pattern.compile(regex);
         return pattern.matcher(line);

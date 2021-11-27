@@ -16,8 +16,10 @@ import java.util.*;
 
 public class CinemaBotClass extends TelegramLongPollingBot {
 
-    String flagButton = "";
-    Boolean flagIsClicked = false;
+    private String flagButton = "";
+    private Boolean flagIsClicked = false;
+    String chosenCity = "";
+    private Boolean flagAccessToWriteCity = false;
 
     @Override
     public String getBotUsername() {
@@ -131,13 +133,18 @@ public class CinemaBotClass extends TelegramLongPollingBot {
                     message = "Отлично! Вы выбрали смотреть фильм в кинотеатре. Давайте выберем кинотеатр...\nТык сюда -> '/choose_cinema'";
             }
             case "choosingCinemaCommand" ->
-                    message = "Океееей, в Екатеринбурге вот такие кинотеатры, в какой пойдете?";
+                    message = "Океееей, в г. " + " вот такие кинотеатры, в какой пойдете?";
             case "callbackChoosingCinemaCommand" -> {
-                Map<String,String> cinemasAndURLMap = GetCinemas.findCinemas("ekaterinburg");
+                Map<String,String> cinemasAndURLMap = GetCinemas.findCinemas("ekaterinburg"); // ekaterinburg, chosenCity
+                System.out.println("cinemasAndURLMap = " + cinemasAndURLMap);
                 String cinemaSelected = new ArrayList<>(cinemasAndURLMap.keySet()).get(data);
                 String urlSelected = cinemasAndURLMap.get(cinemaSelected);
                 message = GetMoviesFromCinema.findMovies(urlSelected);
             }
+            case "choosingCityCommand" ->
+                    message = "Введите название города (с большой буквы, желательно без синтаксических ошибок). Пример ввода:\nЕкатеринбург";
+            case "cityInputCommand" ->
+                    message = "Вы будете лицезреть фильм из города ";
             case "errorInputCommand" ->
                     message = "Команда введена не верно. Попробуйте снова. ";
             case "randomTextInputCommand" ->
@@ -212,6 +219,13 @@ public class CinemaBotClass extends TelegramLongPollingBot {
                                 .build());
                         flagIsClicked = true;
                     }
+                    case "/choose_city" -> {
+                        flagAccessToWriteCity = true;
+                        execute(SendMessage.builder()
+                                .chatId(message.getChatId().toString())
+                                .text(executeMessageByKey("choosingCityCommand", -1))
+                                .build());
+                    }
                     case "/choose_genre" -> {
                         flagButton = "choiceGenre";
                         ArrayList<String> genres = getAllGenres();
@@ -233,7 +247,11 @@ public class CinemaBotClass extends TelegramLongPollingBot {
                     }
                     case "/choose_cinema" -> {
                         flagButton = "choiceCinema";
-                        Map<String,String> cinemasAndURLMap = GetCinemas.findCinemas("ekaterinburg");
+                        execute(SendMessage.builder()
+                                .chatId(message.getChatId().toString())
+                                .text("Напомню. " + executeMessageByKey("cityInputCommand", -1) + chosenCity)
+                                .build());
+                        Map<String,String> cinemasAndURLMap = GetCinemas.findCinemas(GetAllCities.getCityURLByCity(chosenCity));
                         ArrayList<String> cinemasList = new ArrayList<>(cinemasAndURLMap.keySet());
                         List<List<InlineKeyboardButton>> buttonsOfCinemas = new ArrayList<>();
                         for (int i = 0; i < cinemasList.size(); i += 2) {
@@ -275,14 +293,22 @@ public class CinemaBotClass extends TelegramLongPollingBot {
                             .build());
                 }
             }
-
         }
         else {
             if (message.hasText())
-                execute(SendMessage.builder()
-                    .chatId(message.getChatId().toString())
-                    .text(executeMessageByKey("randomTextInputCommand", -1) + message.getText())
-                    .build());
+                if (flagAccessToWriteCity) {
+                    chosenCity = message.getText();
+                    execute(SendMessage.builder()
+                            .chatId(message.getChatId().toString())
+                            .text(executeMessageByKey("cityInputCommand", -1) + chosenCity)
+                            .build());
+                    flagAccessToWriteCity = false;
+                }
+                else
+                    execute(SendMessage.builder()
+                            .chatId(message.getChatId().toString())
+                            .text(executeMessageByKey("randomTextInputCommand", -1) + message.getText())
+                            .build());
             else
                 execute(SendMessage.builder()
                         .chatId(message.getChatId().toString())
