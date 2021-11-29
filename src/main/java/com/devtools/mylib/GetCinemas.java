@@ -10,6 +10,7 @@ import java.util.regex.*;
 
 public class GetCinemas {
 
+
     @SneakyThrows
     public static Map<String,String> findCinemas(String city) {
         URL oracle = new URL("https://kassa.rambler.ru/" + city + "/movie");
