@@ -10,6 +10,10 @@ import java.util.regex.*;
 
 public class GetMoviesFromCinema {
 
+    public static void main(String[] args) {
+        System.out.println(findMovies("/ekaterinburg/cinema/sinema-park-starlayt-1869"));
+    }
+
     public static Matcher getMatcher(String regex, String line){
         Pattern pattern = Pattern.compile(regex);
         return pattern.matcher(line);
@@ -42,7 +46,7 @@ public class GetMoviesFromCinema {
                     result.append(movie);
                     checkSeance = false;
                 }
-                movie = new StringBuilder("'" + matcherMovie.group(1) + "'" + " (");
+                movie = new StringBuilder("'" + matcherMovie.group(1).replaceAll("&#xAB;","\"").replaceAll("&#xBB;","\"").replaceAll("&#x2116;","№") + "'" + " (");
                 continue;
             }
             if (matcherAge.find()) {

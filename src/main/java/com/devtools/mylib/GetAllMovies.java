@@ -1,5 +1,7 @@
 package com.devtools.mylib;
 import lombok.SneakyThrows;
+import org.telegram.telegrambots.meta.TelegramBotsApi;
+import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
 import java.net.*;
 import java.io.*;
@@ -11,6 +13,10 @@ import java.util.regex.*;
 
 public class GetAllMovies {
 
+    public static void main(String[] args) {
+        System.out.println(findMovies("velikiy-novgorod"));
+    }
+
     @SneakyThrows
     public static Map<String,String> findMovies(String city) {
         ArrayList<String> pages = new ArrayList<>();
@@ -20,7 +26,7 @@ public class GetAllMovies {
         while (Integer.parseInt(page) <= Integer.parseInt(pages.get(pages.size() - 1))) {
             URL oracle = new URL("https://kassa.rambler.ru/" + city + "/movie/page-" + page);
             BufferedReader in = new BufferedReader(new InputStreamReader(oracle.openStream()));
-            String regexCinema = "\s<h3 class=\"mb_item__title\" itemprop=\"name\">([\sa-zA-zа-яА-я0-9.:,]+)</h3>";
+            String regexCinema = "\s<h3 class=\"mb_item__title\" itemprop=\"name\">([\sa-zA-zа-яА-я0-9.:;!?,&#]+)</h3>";
             String regexId = "\s<a href=\"/" + city + "/movie/([0-9]+)\">";
             String regexPage = "\s<li class=\"mb-pagination-list-item\"><a class=\"mb-pagination-list-item-txt\" href=\"/" + city + "/movie/page-([0-9]+)\">[0-9]+</a></li>";
             Pattern patternCinema = Pattern.compile(regexCinema);
