@@ -3,6 +3,8 @@ package com.devtools.mylib;
 import lombok.SneakyThrows;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.Map;
@@ -12,13 +14,22 @@ import java.util.regex.Pattern;
 public class GetCinemasByMovie {
 
     public static void main(String[] args) {
-        System.out.println(findCinemasByMovie("ekaterinburg","100291"));
+        //System.out.println(findCinemasByMovie("ekaterinburg","100291"));
+        System.out.println("---------------------------------------------------------------------------------------");
+        System.out.println(findCinemasByMovieFromFile());
     }
 
     @SneakyThrows
     public static String findCinemasByMovie(String cityURL, String movieURL) {
         URL oracle = new URL("https://kassa.rambler.ru/" + cityURL + "/movie/" + movieURL);
         BufferedReader in = new BufferedReader(new InputStreamReader(oracle.openStream()));
+        return analyzingInputData(in);
+    }
+
+    @SneakyThrows
+    public static String findCinemasByMovieFromFile() {
+        File file = new File("src/main/resources/for_GetCinemasByMovies.htm");
+        BufferedReader in = new BufferedReader(new FileReader(file));
         return analyzingInputData(in);
     }
     
@@ -32,7 +43,7 @@ public class GetCinemasByMovie {
         StringBuilder result = new StringBuilder();
         String regexCinema = "\s<a href=\"[/a-z0-9-]+\" itemprop=\"url\"><span itemprop=\"name\" class=\"s-name\">([\sа-яА-яA-za-z]+)</span></a>";
         String regexSeance = "\s<div class=\"rasp_type\">([\sa-яА-яA-Za-z0-9]+)<i class=\"ruble\"></i></div>";
-        String regexDate ="<span class=\"date_link\" data-url=\"[a-яА-яA-Za-z0-9/]+?date=([0-9.]+)\">";
+        String regexDate ="<span class=\"date_link\" data-url=\"[a-яА-яA-Za-z0-9/]+\\?date=([0-9\\.]+)\">";
         String inputLine;
         StringBuilder cinema = new StringBuilder();
         boolean checkSeance = false;
@@ -45,7 +56,6 @@ public class GetCinemasByMovie {
             Matcher matcherDate = getMatcher(regexDate, inputLine);
             if(matcherDate.find())
             {
-                System.out.println("ddd");
                 if(checkDate) {
                     result.append(matcherDate.group(1)).append("\n");
                     checkDate = false;

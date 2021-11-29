@@ -116,7 +116,6 @@ public class TestingBotClass {
         rightMap.put("Екатеринбург", "ekaterinburg");
         rightMap.put("Великий Новгород", "velikiy-novgorod");
         rightMap.put("Санкт-Петербург", "spb");
-        // File file = new File("C:/Users/Егор/IdeaProjects/CBotJava/src/main/resources/for_GetAllCities.htm");
         File file = new File("src/main/resources/for_GetAllCities.htm");
         BufferedReader in = new BufferedReader(new FileReader(file));
         Map<String, String> actualMap = GetAllCities.analyzingInputData(in);
