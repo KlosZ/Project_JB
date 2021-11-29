@@ -20,7 +20,7 @@ public class GetCinemas {
     @SneakyThrows
     public static Map<String, String> analyzingInputData(BufferedReader in, String city) {
         Map<String,String> dictionary = new HashMap<>();
-        String regexCinema = "\s<a href=\"(/" + city + "/cinema/[-a-z0-9]+)\">([\sа-яА-я]+)</a>";
+        String regexCinema = "\s<a href=\"(/" + city + "/cinema/[-a-z0-9]+)\">([\sа-яА-яA-za-z]+)</a>";
         Pattern patternCinema = Pattern.compile(regexCinema);
         String inputLine;
         while ((inputLine = in.readLine()) != null) {
