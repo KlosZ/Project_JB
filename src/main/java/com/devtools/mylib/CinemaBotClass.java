@@ -1,6 +1,7 @@
 package com.devtools.mylib;
 
 import lombok.SneakyThrows;
+import org.checkerframework.common.value.qual.EnsuresMinLenIf;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -20,6 +21,7 @@ public class CinemaBotClass extends TelegramLongPollingBot {
     private Boolean flagIsClicked = false;
     String chosenCity = "";
     private Boolean flagAccessToWriteCity = false;
+    private boolean flagAccessToWriteFilm = false;
 
     @Override
     public String getBotUsername() {
@@ -145,6 +147,10 @@ public class CinemaBotClass extends TelegramLongPollingBot {
                     message = "Вы будете лицезреть фильм из города ";
             case "wrongCityInputCommand" ->
                     message = "Либо в этом городе нет зарегистрированных кинотеатров, либо вы неправильно его ввели. Попробуйте снова!";
+            case "choosingFilmCommand" ->
+                    message = "Итак, какой же вы фильм хотите посмотреть?\nВведите его название полностью или частично без ошибок =)";
+            case "wrongFilmInputCommand" ->
+                    message = "Хмм. Я такого фильма не нашел. Попробуйте снова!";
             case "errorInputCommand" ->
                     message = "Команда введена не верно. Попробуйте снова. ";
             case "randomTextInputCommand" ->
@@ -286,6 +292,13 @@ public class CinemaBotClass extends TelegramLongPollingBot {
                                 .build());
                         flagIsClicked = true;
                     }
+                    case "/choose_film" -> {
+                        flagAccessToWriteFilm = true;
+                        execute(SendMessage.builder()
+                                .chatId(message.getChatId().toString())
+                                .text(executeMessageByKey("choosingFilmCommand", -1))
+                                .build());
+                    }
                     case "/help" -> execute(SendMessage.builder()
                             .chatId(message.getChatId().toString())
                             .text(executeMessageByKey("helpCommand", -1))
@@ -319,10 +332,34 @@ public class CinemaBotClass extends TelegramLongPollingBot {
                                 .build());
                 }
                 else
-                    execute(SendMessage.builder()
-                            .chatId(message.getChatId().toString())
-                            .text(executeMessageByKey("randomTextInputCommand", -1) + message.getText())
-                            .build());
+                    if (flagAccessToWriteFilm) {
+                        Map<String, String> allMoviesAndURLs = GetAllMovies.findMovies(GetAllCities.getCityURLByCity(chosenCity));
+                        String text = message.getText();
+                        boolean flagHappyEnding = true;
+                        ArrayList<String> listOfKeys = new ArrayList<>(allMoviesAndURLs.keySet());
+                        for (String key : listOfKeys) {
+                            if (key.toLowerCase().contains(text.toLowerCase())) {
+                                String result = GetCinemasByMovie.findCinemasByMovie(GetAllCities.getCityURLByCity(chosenCity), allMoviesAndURLs.get(text));
+                                execute(SendMessage.builder()
+                                        .chatId(message.getChatId().toString())
+                                        .text("В г. " + chosenCity + " на фильм '" + key + "' " + result)
+                                        .build());
+                                flagHappyEnding = false;
+                                flagAccessToWriteFilm = false;
+                                break;
+                            }
+                        }
+                        if (flagHappyEnding)
+                            execute(SendMessage.builder()
+                                    .chatId(message.getChatId().toString())
+                                    .text(executeMessageByKey("wrongFilmInputCommand", -1))
+                                    .build());
+                    }
+                    else
+                        execute(SendMessage.builder()
+                                .chatId(message.getChatId().toString())
+                                .text(executeMessageByKey("randomTextInputCommand", -1) + message.getText())
+                                .build());
             else
                 execute(SendMessage.builder()
                         .chatId(message.getChatId().toString())

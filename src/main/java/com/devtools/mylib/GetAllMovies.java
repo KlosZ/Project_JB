@@ -14,7 +14,7 @@ import java.util.regex.*;
 public class GetAllMovies {
 
     public static void main(String[] args) {
-        System.out.println(findMovies("velikiy-novgorod"));
+        System.out.println(findMovies(GetAllCities.getCityURLByCity("Екатеринбург")));
     }
 
     @SneakyThrows
@@ -49,7 +49,6 @@ public class GetAllMovies {
             }
             page = Integer.toString(Integer.parseInt(page) + 1);
         }
-        System.out.println(pages);
         return dictionary;
     }
 }

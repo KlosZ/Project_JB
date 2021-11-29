@@ -3,20 +3,16 @@ package com.devtools.mylib;
 import lombok.SneakyThrows;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.InputStreamReader;
 import java.net.URL;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class GetCinemasByMovie {
 
     public static void main(String[] args) {
-        //System.out.println(findCinemasByMovie("ekaterinburg","100291"));
-        System.out.println("---------------------------------------------------------------------------------------");
-        System.out.println(findCinemasByMovieFromFile());
+        System.out.println(findCinemasByMovie("ekaterinburg","100291"));
+        //System.out.println(findCinemasByMovieFromFile());
     }
 
     @SneakyThrows
@@ -26,12 +22,13 @@ public class GetCinemasByMovie {
         return analyzingInputData(in);
     }
 
+    /*
     @SneakyThrows
     public static String findCinemasByMovieFromFile() {
         File file = new File("src/main/resources/for_GetCinemasByMovies.htm");
         BufferedReader in = new BufferedReader(new FileReader(file));
         return analyzingInputData(in);
-    }
+    }*/
     
     public static Matcher getMatcher(String regex, String line){
         Pattern pattern = Pattern.compile(regex);
@@ -57,7 +54,7 @@ public class GetCinemasByMovie {
             if(matcherDate.find())
             {
                 if(checkDate) {
-                    result.append(matcherDate.group(1)).append("\n");
+                    result.append("ближайшие сеансы есть ").append(matcherDate.group(1)).append(" в этих кинотеатрах:");
                     checkDate = false;
                 }
             }
@@ -95,7 +92,7 @@ public class GetCinemasByMovie {
             result.append(cinema);
         }
         if(result.toString().equals(""))
-            return "Вы сделали ошибку. Попробуйте другой";
+            result.append("боюсь, ни в одном кинотеатре этот фильм не показывают..."); // не достигается?
         return result.toString();
     }
 }
