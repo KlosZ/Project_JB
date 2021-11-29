@@ -14,6 +14,7 @@ public class GetCinemasByMovie {
     public static void main(String[] args) {
         System.out.println(findCinemasByMovie("ekaterinburg","100291"));
     }
+
     @SneakyThrows
     public static String findCinemasByMovie(String cityURL, String movieURL) {
         URL oracle = new URL("https://kassa.rambler.ru/" + cityURL + "/movie/" + movieURL);
@@ -31,7 +32,7 @@ public class GetCinemasByMovie {
         StringBuilder result = new StringBuilder();
         String regexCinema = "\s<a href=\"[/a-z0-9-]+\" itemprop=\"url\"><span itemprop=\"name\" class=\"s-name\">([\sа-яА-яA-za-z]+)</span></a>";
         String regexSeance = "\s<div class=\"rasp_type\">([\sa-яА-яA-Za-z0-9]+)<i class=\"ruble\"></i></div>";
-        String regexDate ="\s<span class=\"date_link\" data-url=\"[\sa-яА-яA-Za-z0-9]+?date=([\sa-яА-яA-Za-z0-9]+)\">";
+        String regexDate ="<span class=\"date_link\" data-url=\"[a-яА-яA-Za-z0-9/]+?date=([0-9.]+)\">";
         String inputLine;
         StringBuilder cinema = new StringBuilder();
         boolean checkSeance = false;
