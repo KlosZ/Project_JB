@@ -11,7 +11,7 @@ import java.util.regex.*;
 public class GetMoviesFromCinema {
 
     public static void main(String[] args) {
-        System.out.println(findMovies("/ekaterinburg/cinema/sinema-park-starlayt-1869"));
+        System.out.println(findMoviesFromCinema("/ekaterinburg/cinema/sinema-park-starlayt-1869"));
     }
 
     public static Matcher getMatcher(String regex, String line){
@@ -20,7 +20,7 @@ public class GetMoviesFromCinema {
     }
 
     @SneakyThrows
-    public static String findMovies(String cinema) {
+    public static String findMoviesFromCinema(String cinema) {
         URL oracle = new URL("https://kassa.rambler.ru" + cinema);
         BufferedReader in = new BufferedReader(new InputStreamReader(oracle.openStream()));
         StringBuilder result = new StringBuilder();

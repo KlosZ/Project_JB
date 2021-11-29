@@ -137,21 +137,20 @@ public class CinemaBotClass extends TelegramLongPollingBot {
                 Map<String,String> cinemasAndURLMap = GetCinemas.findCinemas(GetAllCities.getCityURLByCity(chosenCity));
                 String cinemaSelected = new ArrayList<>(cinemasAndURLMap.keySet()).get(data);
                 String urlSelected = cinemasAndURLMap.get(cinemaSelected);
-                message = GetMoviesFromCinema.findMovies(urlSelected);
+                message = GetMoviesFromCinema.findMoviesFromCinema(urlSelected);
             }
             case "choosingCityCommand" ->
                     message = "Введите название города (с большой буквы, без спец. символов и цифр и желательно без синтаксических ошибок). Пример ввода:\nЕкатеринбург";
             case "cityInputCommand" ->
                     message = "Вы будете лицезреть фильм из города ";
             case "wrongCityInputCommand" ->
-                    message = "Либо в этом городе нет зарегистрированных кинотеатров, либо вы неправильно его ввели. Попробуйте снова";
+                    message = "Либо в этом городе нет зарегистрированных кинотеатров, либо вы неправильно его ввели. Попробуйте снова!";
             case "errorInputCommand" ->
                     message = "Команда введена не верно. Попробуйте снова. ";
             case "randomTextInputCommand" ->
                     message = "Вы отправили: ";
             case "randomInputCommand" ->
-                    message = "Вы отправили не текстовое сообщение. " +
-                            "Я же бот, а не нейросеть, чтобы распознавать, что вы мне отправили. =)";
+                    message = "Вы отправили не текстовое сообщение. Я же бот, а не нейросеть, чтобы распознавать, что вы мне отправили. =)";
             case "notRealizedCommand" ->
                     message = "Команда еще не реализована! Попробуйте позже!";
             case "helpCommand" ->
@@ -316,7 +315,7 @@ public class CinemaBotClass extends TelegramLongPollingBot {
                     else
                         execute(SendMessage.builder()
                                 .chatId(message.getChatId().toString())
-                                .text(executeMessageByKey("wrongCityInputCommand", -1) + chosenCity + '!')
+                                .text(executeMessageByKey("wrongCityInputCommand", -1))
                                 .build());
                 }
                 else
