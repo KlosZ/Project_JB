@@ -10,20 +10,17 @@ import java.util.regex.*;
 
 public class GetCinemas {
 
-    public static void main(String[] args) {
-        Map<String,String> engRus = findCinemas("ekaterinburg");
-        System.out.println(engRus);
-        System.out.println(engRus.size());
-        // System.out.println(engRus.keySet());
-        // System.out.println(engRus.values());
-    }
-
     @SneakyThrows
     public static Map<String,String> findCinemas(String city) {
         URL oracle = new URL("https://kassa.rambler.ru/" + city + "/movie");
         BufferedReader in = new BufferedReader(new InputStreamReader(oracle.openStream()));
+        return analyzingInputData(in, city);
+    }
+
+    @SneakyThrows
+    public static Map<String, String> analyzingInputData(BufferedReader in, String city) {
         Map<String,String> dictionary = new HashMap<>();
-        String regexCinema = "\s<a href=\"(/"+city+"/cinema/[-a-z0-9]+)\">([\sа-яА-я]+)</a>";
+        String regexCinema = "\s<a href=\"(/" + city + "/cinema/[-a-z0-9]+)\">([\sа-яА-я]+)</a>";
         Pattern patternCinema = Pattern.compile(regexCinema);
         String inputLine;
         while ((inputLine = in.readLine()) != null) {

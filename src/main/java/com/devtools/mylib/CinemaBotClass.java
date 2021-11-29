@@ -104,17 +104,16 @@ public class CinemaBotClass extends TelegramLongPollingBot {
     }
 
     @SneakyThrows
-    public static String executeMessageByKey(String key, int data) {
+    public String executeMessageByKey(String key, int data) {
         String message = "";
         switch (key) {
             case "startCommand" ->
                     message = """
                             Здравствуй, уважаемый пользователь! Добро пожаловать в K&K's CinemaBot!
                             Этот бот поможет вам с выбором фильма на вечер.
-                            Чуть ниже, выберите, где вы будете смотреть кинцо?
+                            Для начала следующим сообщением напишите, из какого города вы будете смотреть кино?
                             
-                            В любой момент, вы можете обратиться по команде '/help',
-                            если не знаешь что и как. Действуй =)
+                            P.S. В любой момент, вы можете обратиться по команде '/help', если не знаешь что и как. Действуй =)
                             """;
             case "choosingGenreCommand" ->
                     message = "Пожалуйста, выберите жанр фильма, который хотите посмотреть. ";
@@ -133,18 +132,19 @@ public class CinemaBotClass extends TelegramLongPollingBot {
                     message = "Отлично! Вы выбрали смотреть фильм в кинотеатре. Давайте выберем кинотеатр...\nТык сюда -> '/choose_cinema'";
             }
             case "choosingCinemaCommand" ->
-                    message = "Океееей, в г. " + " вот такие кинотеатры, в какой пойдете?";
+                    message = "Океееей, в г. " + chosenCity + " вот такие кинотеатры, в какой пойдете?";
             case "callbackChoosingCinemaCommand" -> {
-                Map<String,String> cinemasAndURLMap = GetCinemas.findCinemas("ekaterinburg"); // ekaterinburg, chosenCity
-                System.out.println("cinemasAndURLMap = " + cinemasAndURLMap);
+                Map<String,String> cinemasAndURLMap = GetCinemas.findCinemas(GetAllCities.getCityURLByCity(chosenCity));
                 String cinemaSelected = new ArrayList<>(cinemasAndURLMap.keySet()).get(data);
                 String urlSelected = cinemasAndURLMap.get(cinemaSelected);
                 message = GetMoviesFromCinema.findMovies(urlSelected);
             }
             case "choosingCityCommand" ->
-                    message = "Введите название города (с большой буквы, желательно без синтаксических ошибок). Пример ввода:\nЕкатеринбург";
+                    message = "Введите название города (с большой буквы, без спец. символов и цифр и желательно без синтаксических ошибок). Пример ввода:\nЕкатеринбург";
             case "cityInputCommand" ->
                     message = "Вы будете лицезреть фильм из города ";
+            case "wrongCityInputCommand" ->
+                    message = "Либо в этом городе нет зарегистрированных кинотеатров, либо вы неправильно его ввели. Попробуйте снова";
             case "errorInputCommand" ->
                     message = "Команда введена не верно. Попробуйте снова. ";
             case "randomTextInputCommand" ->
@@ -158,8 +158,11 @@ public class CinemaBotClass extends TelegramLongPollingBot {
                     message = """
                             Итак, что же может этот ваш бот (то есть, я)?
                             
-                            1. /help
+                            0. /help
                             Команда, которая должна быть в каждом боте. Помогает с навигацией по боту.
+                            
+                            1. /choose_city
+                            Необходима в путешествиях по стране, если вы хотите посмотреть фильм, скажем из Костромы. Понятное дело, команда меняет город для поиска кинотеатров в нем.
                             
                             2. /choose_place
                             Чтобы мне знать, что предложить, я должен понять, где вы хотите посмотреть фильм: дома или в кинотеатре.
@@ -211,13 +214,15 @@ public class CinemaBotClass extends TelegramLongPollingBot {
                 switch (command) {
                     case "/start" -> {
                         flagButton = "choiceHomeCinema";
-                        List<List<InlineKeyboardButton>> buttonsOfPlaces = getHomeCinemaButtons();
                         execute(SendMessage.builder()
                                 .chatId(message.getChatId().toString())
                                 .text(executeMessageByKey("startCommand", -1))
-                                .replyMarkup(InlineKeyboardMarkup.builder().keyboard(buttonsOfPlaces).build())
                                 .build());
-                        flagIsClicked = true;
+                        execute(SendMessage.builder()
+                                .chatId(message.getChatId().toString())
+                                .text(executeMessageByKey("choosingCityCommand", -1))
+                                .build());
+                        flagAccessToWriteCity = true;
                     }
                     case "/choose_city" -> {
                         flagAccessToWriteCity = true;
@@ -249,12 +254,13 @@ public class CinemaBotClass extends TelegramLongPollingBot {
                         flagButton = "choiceCinema";
                         execute(SendMessage.builder()
                                 .chatId(message.getChatId().toString())
-                                .text("Напомню. " + executeMessageByKey("cityInputCommand", -1) + chosenCity)
+                                .text("Напомню. " + executeMessageByKey("cityInputCommand", -1) + chosenCity + '!')
                                 .build());
                         Map<String,String> cinemasAndURLMap = GetCinemas.findCinemas(GetAllCities.getCityURLByCity(chosenCity));
                         ArrayList<String> cinemasList = new ArrayList<>(cinemasAndURLMap.keySet());
                         List<List<InlineKeyboardButton>> buttonsOfCinemas = new ArrayList<>();
-                        for (int i = 0; i < cinemasList.size(); i += 2) {
+                        int n = cinemasList.size();
+                        for (int i = 0; i < n; i += 2) {
                             buttonsOfCinemas.add(Arrays.asList(
                                     InlineKeyboardButton.builder()
                                             .text(cinemasList.get(i)).callbackData(Integer.toString(i)).build(),
@@ -262,6 +268,8 @@ public class CinemaBotClass extends TelegramLongPollingBot {
                                             .text(cinemasList.get(i + 1)).callbackData(Integer.toString(i + 1)).build()
                             ));
                         }
+                        if (n % 2 == 1)
+                            buttonsOfCinemas.add(List.of(InlineKeyboardButton.builder().text(cinemasList.get(n - 1)).callbackData(Integer.toString(n - 1)).build()));
                         execute(SendMessage.builder()
                                 .chatId(message.getChatId().toString())
                                 .text(executeMessageByKey("choosingCinemaCommand", -1))
@@ -297,12 +305,19 @@ public class CinemaBotClass extends TelegramLongPollingBot {
         else {
             if (message.hasText())
                 if (flagAccessToWriteCity) {
-                    chosenCity = message.getText();
-                    execute(SendMessage.builder()
-                            .chatId(message.getChatId().toString())
-                            .text(executeMessageByKey("cityInputCommand", -1) + chosenCity)
-                            .build());
-                    flagAccessToWriteCity = false;
+                    if (GetAllCities.findCities().containsKey(message.getText())) {
+                        chosenCity = message.getText();
+                        execute(SendMessage.builder()
+                                .chatId(message.getChatId().toString())
+                                .text(executeMessageByKey("cityInputCommand", -1) + chosenCity + '!')
+                                .build());
+                        flagAccessToWriteCity = false;
+                    }
+                    else
+                        execute(SendMessage.builder()
+                                .chatId(message.getChatId().toString())
+                                .text(executeMessageByKey("wrongCityInputCommand", -1) + chosenCity + '!')
+                                .build());
                 }
                 else
                     execute(SendMessage.builder()
