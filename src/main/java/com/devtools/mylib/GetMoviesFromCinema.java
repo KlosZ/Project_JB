@@ -1,7 +1,5 @@
 package com.devtools.mylib;
 import lombok.SneakyThrows;
-import org.telegram.telegrambots.meta.TelegramBotsApi;
-import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
 import java.net.*;
 import java.io.*;
@@ -15,14 +13,18 @@ public class GetMoviesFromCinema {
     }
 
     public static Matcher getMatcher(String regex, String line){
-        Pattern pattern = Pattern.compile(regex);
-        return pattern.matcher(line);
+        return Pattern.compile(regex).matcher(line);
     }
 
     @SneakyThrows
     public static String findMoviesFromCinema(String cinema) {
         URL oracle = new URL("https://kassa.rambler.ru" + cinema);
         BufferedReader in = new BufferedReader(new InputStreamReader(oracle.openStream()));
+        return analyzingInputData(in);
+    }
+
+    @SneakyThrows
+    public static String analyzingInputData(BufferedReader in) {
         StringBuilder result = new StringBuilder();
         String regexMovie = "\s<div class=\"rasp_title\"><a href=\"[/a-z0-9-]+\" itemprop=\"url\"><span itemprop=\"name\" class=\"s-name\">([\sa-zA-zа-яА-я0-9.:;!?,&#]+)</span></a></div>";
         String regexAge = "\s<div class=\"rasp_audience_movie\" itemprop=\"typicalAgeRange\">([0-9+]+)</div>";

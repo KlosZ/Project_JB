@@ -3,6 +3,8 @@ package com.devtools.mylib;
 import lombok.SneakyThrows;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.regex.Matcher;
@@ -12,7 +14,6 @@ public class GetCinemasByMovie {
 
     public static void main(String[] args) {
         System.out.println(findCinemasByMovie("ekaterinburg","100291"));
-        //System.out.println(findCinemasByMovieFromFile());
     }
 
     @SneakyThrows
@@ -22,14 +23,6 @@ public class GetCinemasByMovie {
         return analyzingInputData(in);
     }
 
-    /*
-    @SneakyThrows
-    public static String findCinemasByMovieFromFile() {
-        File file = new File("src/main/resources/for_GetCinemasByMovies.htm");
-        BufferedReader in = new BufferedReader(new FileReader(file));
-        return analyzingInputData(in);
-    }*/
-    
     public static Matcher getMatcher(String regex, String line){
         Pattern pattern = Pattern.compile(regex);
         return pattern.matcher(line);

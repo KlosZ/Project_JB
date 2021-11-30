@@ -1,7 +1,6 @@
 package com.devtools.mylib;
 
 import lombok.SneakyThrows;
-import org.checkerframework.common.value.qual.EnsuresMinLenIf;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -123,7 +122,7 @@ public class CinemaBotClass extends TelegramLongPollingBot {
                 ArrayList<String> genres = getAllGenres();
                 String movieGenre = genres.get(data);
                 message = "Отличный выбор! Вот фильм жанра '" + movieGenre +
-                        "', который вы можете посмотреть:\n" + ReadFromSite.findMovie(movieGenre);
+                        "', который вы можете посмотреть:\n" + GetGenresIMDb.findMovie(movieGenre);
             }
             case "сhoosingPlaceCommand" ->
                     message = "Ну и где же вы хотите посмотреть фильмец?";
@@ -147,8 +146,10 @@ public class CinemaBotClass extends TelegramLongPollingBot {
                     message = "Вы будете лицезреть фильм из города ";
             case "wrongCityInputCommand" ->
                     message = "Либо в этом городе нет зарегистрированных кинотеатров, либо вы неправильно его ввели. Попробуйте снова!";
+            case "emptyChosenCityField" ->
+                    message = "Чтобы выполнить то, что вы хотите, необходимо ввести интересуемый вас город (там, где вы будете смотреть кинцо). Затем повторите ваши предыдущие действие";
             case "choosingFilmCommand" ->
-                    message = "Итак, какой же вы фильм хотите посмотреть?\nВведите его название полностью или частично без ошибок =)";
+                    message = "Итак, какой же вы фильм хотите посмотреть?\nВведите его название полностью без ошибок =)";
             case "wrongFilmInputCommand" ->
                     message = "Хмм. Я такого фильма не нашел. Попробуйте снова!";
             case "errorInputCommand" ->
@@ -256,31 +257,40 @@ public class CinemaBotClass extends TelegramLongPollingBot {
                         flagIsClicked = true;
                     }
                     case "/choose_cinema" -> {
-                        flagButton = "choiceCinema";
-                        execute(SendMessage.builder()
-                                .chatId(message.getChatId().toString())
-                                .text("Напомню. " + executeMessageByKey("cityInputCommand", -1) + chosenCity + '!')
-                                .build());
-                        Map<String,String> cinemasAndURLMap = GetCinemas.findCinemas(GetAllCities.getCityURLByCity(chosenCity));
-                        ArrayList<String> cinemasList = new ArrayList<>(cinemasAndURLMap.keySet());
-                        List<List<InlineKeyboardButton>> buttonsOfCinemas = new ArrayList<>();
-                        int n = cinemasList.size();
-                        for (int i = 0; i < n; i += 2) {
-                            buttonsOfCinemas.add(Arrays.asList(
-                                    InlineKeyboardButton.builder()
-                                            .text(cinemasList.get(i)).callbackData(Integer.toString(i)).build(),
-                                    InlineKeyboardButton.builder()
-                                            .text(cinemasList.get(i + 1)).callbackData(Integer.toString(i + 1)).build()
-                            ));
+                        if (!chosenCity.equals("")) {
+                            flagButton = "choiceCinema";
+                            execute(SendMessage.builder()
+                                    .chatId(message.getChatId().toString())
+                                    .text("Напомню. " + executeMessageByKey("cityInputCommand", -1) + chosenCity + '!')
+                                    .build());
+                            Map<String, String> cinemasAndURLMap = GetCinemas.findCinemas(GetAllCities.getCityURLByCity(chosenCity));
+                            ArrayList<String> cinemasList = new ArrayList<>(cinemasAndURLMap.keySet());
+                            List<List<InlineKeyboardButton>> buttonsOfCinemas = new ArrayList<>();
+                            int n = cinemasList.size();
+                            for (int i = 0; i < n; i += 2) {
+                                buttonsOfCinemas.add(Arrays.asList(
+                                        InlineKeyboardButton.builder()
+                                                .text(cinemasList.get(i)).callbackData(Integer.toString(i)).build(),
+                                        InlineKeyboardButton.builder()
+                                                .text(cinemasList.get(i + 1)).callbackData(Integer.toString(i + 1)).build()
+                                ));
+                            }
+                            if (n % 2 == 1)
+                                buttonsOfCinemas.add(List.of(InlineKeyboardButton.builder().text(cinemasList.get(n - 1)).callbackData(Integer.toString(n - 1)).build()));
+                            execute(SendMessage.builder()
+                                    .chatId(message.getChatId().toString())
+                                    .text(executeMessageByKey("choosingCinemaCommand", -1))
+                                    .replyMarkup(InlineKeyboardMarkup.builder().keyboard(buttonsOfCinemas).build())
+                                    .build());
+                            flagIsClicked = true;
                         }
-                        if (n % 2 == 1)
-                            buttonsOfCinemas.add(List.of(InlineKeyboardButton.builder().text(cinemasList.get(n - 1)).callbackData(Integer.toString(n - 1)).build()));
-                        execute(SendMessage.builder()
-                                .chatId(message.getChatId().toString())
-                                .text(executeMessageByKey("choosingCinemaCommand", -1))
-                                .replyMarkup(InlineKeyboardMarkup.builder().keyboard(buttonsOfCinemas).build())
-                                .build());
-                        flagIsClicked = true;
+                        else {
+                            flagAccessToWriteCity = true;
+                            execute(SendMessage.builder()
+                                    .chatId(message.getChatId().toString())
+                                    .text(executeMessageByKey("emptyChosenCityField", -1))
+                                    .build());
+                        }
                     }
                     case "/choose_place" -> {
                         flagButton = "choiceHomeCinema";
