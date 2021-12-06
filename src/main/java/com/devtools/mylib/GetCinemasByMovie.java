@@ -27,7 +27,7 @@ public class GetCinemasByMovie {
         Pattern pattern = Pattern.compile(regex);
         return pattern.matcher(line);
     }
-    
+
     @SneakyThrows
     public static String analyzingInputData(BufferedReader in) {
         StringBuilder result = new StringBuilder();
