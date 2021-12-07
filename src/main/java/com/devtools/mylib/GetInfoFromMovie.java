@@ -40,6 +40,7 @@ public class GetInfoFromMovie {
         String poster = "";
         StringBuilder cinema = new StringBuilder();
         boolean check = true;
+        String title = "";
         while ((inputLine = in.readLine()) != null) {
             Matcher matcherMovie = getMatcher(regexTitle, inputLine);
             Matcher matcherImage = getMatcher(regexImage, inputLine);
@@ -48,6 +49,7 @@ public class GetInfoFromMovie {
             Matcher matcherActors = getMatcher(regexActors, inputLine);
             if (matcherMovie.find()) {
                 result.append(matcherMovie.group(1)).append("\n");
+                title = matcherMovie.group(1);
             }
             if (matcherImage.find()) {
                 poster = "Постер: "+matcherImage.group(1)+"\n";
@@ -63,9 +65,19 @@ public class GetInfoFromMovie {
                 result.append("Актеры: ").append(matcherActors.group(1)).append("\n");
             }
         }
-        result.append(poster);
+        URL oracle = new URL("https://imdb-api.com/ru/API/SearchMovie/k_87qqc5tk/"+title);
+        BufferedReader movieIn = new BufferedReader(new InputStreamReader(oracle.openStream()));
+        String m = movieIn.readLine();
+        String image = m.substring(m.indexOf("image\":")+("image\":").length()+1,m.indexOf("\",\"title\""));
+        if (image == "")
+        {
+            result.append("Постер: ").append(poster);
+        }
+        else{
+            result.append("Постер: ").append(image);
+        }
         if(result.toString().equals(""))
             result.append("Что-то пошло не так..."); // не достигается?
-        return result.toString().replaceAll("&#xAB;","\"").replaceAll("&#xBB;","\"").replaceAll("&#x2116;","№");
+        return result.toString().replaceAll("&#xAB;","\"").replaceAll("&#xBB;","\"").replaceAll("&#x2116;","№").replaceAll("&#x2014;","-");
     }
 }
