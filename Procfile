@@ -1,1 +1,1 @@
-worker java $JAVA_OPTS -cp target/classes:target/dependency/* com.devtools.mylib.CinemaBotClass.class
+web: java -jar target/CBotJava-1.0-SNAPSHOT-jar-with-dependencies.jar
