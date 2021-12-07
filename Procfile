@@ -1,1 +1,1 @@
-worker java $JAVA_OPTS -cp target/classes:target/dependency/* com/devtools/mylib/CinemaBotClass
+worker java $JAVA_OPTS -cp target/classes:target/dependency/* com.devtools.mylib.CinemaBotClass
