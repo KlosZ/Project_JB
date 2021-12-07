@@ -62,7 +62,7 @@ public class GetGenresIMDb {
         }
         else
         {
-            return movies.get(randMovie)+"\nРежиссер(ы): "+director+"\nАктеры: "+stars+"\nСюжет: "+plotLocal + "\nПостер: "+ image;
+            return "\n"+movies.get(randMovie)+"\nРежиссер(ы): "+director+"\n\nАктеры: "+stars+"\n\nСюжет: "+plotLocal + "\n\nПостер: "+ image;
         }
     }
 }
