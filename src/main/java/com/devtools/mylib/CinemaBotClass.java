@@ -349,6 +349,10 @@ public class CinemaBotClass extends TelegramLongPollingBot {
                         ArrayList<String> listOfKeys = new ArrayList<>(allMoviesAndURLs.keySet());
                         for (String key : listOfKeys) {
                             if (key.toLowerCase().contains(text.toLowerCase())) {
+                                execute(SendMessage.builder()
+                                        .chatId(message.getChatId().toString())
+                                        .text(GetInfoFromMovie.findInfoByMovie(GetAllCities.getCityURLByCity(chosenCity), allMoviesAndURLs.get(text)))
+                                        .build());
                                 String result = GetCinemasByMovie.findCinemasByMovie(GetAllCities.getCityURLByCity(chosenCity), allMoviesAndURLs.get(text));
                                 execute(SendMessage.builder()
                                         .chatId(message.getChatId().toString())
